@@ -17,6 +17,8 @@ beforeEach(async () => {
   [owner, buyer] = await ethers.getSigners();
   const TokenTix = await ethers.getContractFactory("TokenTix");
   tokenTix = await TokenTix.deploy('TokenTix', 'TT');
+  // await tokenTix.deployed();
+  console.log(tokenTix.target)
   const createOcc = await tokenTix.connect(owner).createOccasion(name, price, noOfTickets, date, location, time)
   await createOcc.wait()
 })
@@ -46,17 +48,22 @@ beforeEach(async () => {
     
   })
   describe('Buy Ticket', async () => {
+    const tprice = ethers.parseUnits('1', 'ether')
     beforeEach(async () => {
-      const tprice = ethers.parseUnits('1', 'ether')
+      
       const buyTicket = await tokenTix.connect(buyer).buyTicket(1, 1, {value : tprice})
       await buyTicket.wait()
     })
     it('Buy Ticket', async () => {
       const curOcc = await tokenTix.getOccasion(1)
       const hasBought = await tokenTix.hasTicket(1, buyer)
+      // console.log(tokenTix.target)
+      const balance = await ethers.provider.getBalance(tokenTix.target)
       expect(curOcc.noOfTickets).to.be.equal(100 - 1)
       expect(hasBought).to.be.equal(true)
-    })})
+      expect(balance).to.be.equal(tprice)
+    })
+  })
 
   })
 
