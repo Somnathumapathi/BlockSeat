@@ -58,12 +58,32 @@ beforeEach(async () => {
       const curOcc = await tokenTix.getOccasion(1)
       const hasBought = await tokenTix.hasTicket(1, buyer)
       // console.log(tokenTix.target)
-      const balance = await ethers.provider.getBalance(tokenTix.target)
+      const balance = await ethers.provider.getBalance(tokenTix)
       expect(curOcc.noOfTickets).to.be.equal(100 - 1)
       expect(hasBought).to.be.equal(true)
       expect(balance).to.be.equal(tprice)
     })
   })
+  describe('WithDraw', async () => {
+    const AMOUNT = ethers.parseUnits("1", 'ether')
+    let balanceBefore:any
 
+    beforeEach(async () => {
+      balanceBefore = await ethers.provider.getBalance(owner)
+
+      let transaction = await tokenTix.connect(buyer).buyTicket(1, noOfTickets, { value: AMOUNT })
+      await transaction.wait()
+
+      transaction = await tokenTix.connect(owner).withDraw()
+      await transaction.wait()
+    })
+
+    it('Updates balance', async () => {
+      const balanceAfter = await ethers.provider.getBalance(owner)
+      const balance = await ethers.provider.getBalance(tokenTix)
+      expect(balance).to.equal(0)
+      expect(balanceAfter).to.be.greaterThan(balanceBefore)
+    })
+  })
   })
 

@@ -57,4 +57,9 @@ owner = msg.sender;
         tixCount++;
         _safeMint(msg.sender, tixCount);
     }
+
+    function withDraw() onlyOwner public{
+        (bool success,) = owner.call{value: address(this).balance}("");
+        require(success);
+    }
 }
